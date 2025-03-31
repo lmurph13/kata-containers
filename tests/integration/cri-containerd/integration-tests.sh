@@ -103,24 +103,37 @@ function create_containerd_config() {
 	fi
 
 	# check containerd config version
+	local pluginid="cri"
+	local version=""
+
+	if containerd config default | grep -q "version = 2\>"; then
+		pluginid=\"io.containerd.grpc.v1.cri\"
+		version="2"
+	fi
+
 	if containerd config default | grep -q "version = 3\>"; then
 		pluginid=\"io.containerd.cri.v1.runtime\"
-	else
-		pluginid="cri"
+		version="3"
 	fi
+
 	info "Kata Config Path ${runtime_config_path}, Runtime Binary Name ${runtime_binary_path}"
 
 cat << EOF | sudo tee "${CONTAINERD_CONFIG_FILE}"
+$( [ -n "${version}" ] && \
+echo "version = ${version}" 
+)
 [debug]
   level = "debug"
 [plugins]
   [plugins.${pluginid}]
     [plugins.${pluginid}.containerd]
-        default_runtime_name = "$runtime"
-      [plugins.${pluginid}.containerd.runtimes.${runtime}]
+        default_runtime_name = "${runtime}"
+      [plugins.${pluginid}.containerd.runtimes.\"${runtime}\"]
         runtime_type = "${runtime_type}"
-        sandboxer = "${SANDBOXER}"
-        $( [ $kata_annotations -eq 1 ] && \
+        $( [ -n "${SANDBOXER}"  ] && \
+        echo "sandboxer = \"${SANDBOXER}\""
+        )
+        $( [ ${kata_annotations} -eq 1 ] && \
         echo 'pod_annotations = ["io.katacontainers.*"]' && \
         echo '        container_annotations = ["io.katacontainers.*"]'
         )

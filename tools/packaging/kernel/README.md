@@ -78,7 +78,7 @@ sets up a kernel. If you want to add a source modification, add a patch on this
 directory. Patches present in the top-level directory are applied, with subdirectories being ignored.
 
 The script also adds a kernel config file from
-`${GOPATH}/src/github.com/kata-containers/kata-containers/tools/packaging/kernel/configs/` to `.config`
+`kata-containers/tools/packaging/kernel/configs/` to `.config`
 in the kernel source code. You can modify it as needed.
 
 ## Build the kernel
